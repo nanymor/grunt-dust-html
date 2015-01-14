@@ -17,12 +17,14 @@ module.exports = function(grunt) {
     var opts = this.options();
     var dfds = [];
 
+    dusthtml.init(opts);
+
     this.files.forEach(function(file) {
       dfds = file.src.map(function(filepath) {
         var input = grunt.file.read(filepath);
 
         return new Promise(function(resolve, reject) {
-          dusthtml.render(input, opts, function(err, html) {
+          dusthtml.render(input, filepath, function(err, html) {
             if(err) {
               return reject(err);
             }
