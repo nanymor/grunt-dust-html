@@ -16,7 +16,9 @@ module.exports.init = function(options) {
       vars: {},
       onInit: function(){},
       module: 'dustjs-linkedin', // dust, dustjs-helpers, or dustjs-linkedin
-      context: {}
+      context: {},
+      htmlDirName: 'html',
+      dataDirName: 'data'
     }, options || {});
 
   dust = require(opts.module);
@@ -102,9 +104,10 @@ module.exports.render = function(input, filename, callback) {
   //inject vars coming from grunt task
   _.extend(context, opts.vars);
 
-  var viewjsonsrc = path.dirname(filename).replace('views','data') + '/' + path.basename(filename).replace(opts.defaultExt,'') + '.json',
+  var viewjsonsrc = path.dirname(filename).replace(opts.htmlDirName, opts.dataDirName) + '/' + path.basename(filename).replace(opts.defaultExt,'') + '.json',
       viewjson = fs.readJsonSync(viewjsonsrc, {throws: false}),
-      viewmodel = (viewjson)? { page: viewjson}:{};
+      viewmodel = viewjson || {};
+  
   console.log('adding',viewjsonsrc);
   _.extend(context, viewmodel);
 
