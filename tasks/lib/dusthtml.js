@@ -3,7 +3,6 @@
 var path = require('path');
 var fs = require('fs-extra');
 var _ = require('lodash');
-var async = require('async');
 var grunt = require('grunt');
 var opts,dust,context;
 
