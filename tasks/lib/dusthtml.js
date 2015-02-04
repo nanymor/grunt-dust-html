@@ -17,8 +17,9 @@ module.exports.init = function(options) {
       onInit: function(){},
       module: 'dustjs-linkedin', // dust, dustjs-helpers, or dustjs-linkedin
       context: {},
-      htmlDirName: 'html',
-      dataDirName: 'data'
+      htmlDirName: 'html', //folder that contains the templates
+      dataDirName: 'data', //folder that contains the viewmodel data
+      viewModelObj: false, //name of the top level object used for viewmodels, if needed
     }, options || {});
 
   dust = require(opts.module);
@@ -106,8 +107,14 @@ module.exports.render = function(input, filename, callback) {
 
   var viewjsonsrc = path.dirname(filename).replace(opts.htmlDirName, opts.dataDirName) + '/' + path.basename(filename).replace(opts.defaultExt,'') + '.json',
       viewjson = fs.readJsonSync(viewjsonsrc, {throws: false}),
+      viewmodel = {};
+
+  if (opts.viewModelObj) {
+      viewmodel[opts.viewModelObj] = viewjson || {};
+  } else {
       viewmodel = viewjson || {};
-  
+  }
+
   console.log('adding',viewjsonsrc);
   _.extend(context, viewmodel);
 
