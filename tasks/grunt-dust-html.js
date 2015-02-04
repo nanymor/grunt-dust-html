@@ -19,8 +19,6 @@ module.exports = function(grunt) {
 
     dusthtml.init(opts);
 
-    var dfds = [];
-
     this.files.forEach(function(file) {
       file.src.forEach(function(filepath) {
         var input = grunt.file.read(filepath);

@@ -31,7 +31,7 @@ module.exports.init = function(options) {
 
   opts.onInit(dust,opts);
 
-}
+};
 
 
 module.exports.render = function(input, filename, callback) {
