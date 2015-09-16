@@ -115,7 +115,7 @@ module.exports.render = function(input, filename, callback) {
   }
 
   console.log('adding',viewjsonsrc);
-  _.extend(context, viewmodel);
+  _.merge(context, viewmodel);
 
   // Render the template and pass the result directly to the callback
   tmpl(context, callback);
