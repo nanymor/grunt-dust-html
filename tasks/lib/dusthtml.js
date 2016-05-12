@@ -1,7 +1,8 @@
 'use strict';
 
 var path = require('path');
-var fs = require('fs-extra');
+var fs = require('fs-utils');
+var jsonminify = require("jsonminify");
 var _ = require('lodash');
 var grunt = require('grunt');
 var opts,dust,context;
@@ -104,9 +105,12 @@ module.exports.render = function(input, filename, callback) {
   //inject vars coming from grunt task
   _.extend(context, opts.vars);
 
-  var viewjsonsrc = path.dirname(filename).replace(opts.htmlDirName, opts.dataDirName) + '/' + path.basename(filename).replace(opts.defaultExt,'') + '.json',
-      viewjson = fs.readJsonSync(viewjsonsrc, {throws: false}),
-      viewmodel = {};
+  var viewjsonsrc = path.dirname(filename).replace(opts.htmlDirName, opts.dataDirName) + '/' + path.basename(filename).replace(opts.defaultExt,'') + '.json';
+  var rawviewcontents = fs.readFileSync(viewjsonsrc,{},true);
+  var stripped = jsonminify(rawviewcontents);
+  // console.log('stripped',stripped);
+  var viewjson = JSON.parse(stripped);
+  var viewmodel = {};
 
   if (opts.viewModelObj) {
       viewmodel[opts.viewModelObj] = viewjson || {};
@@ -116,6 +120,7 @@ module.exports.render = function(input, filename, callback) {
 
   console.log('adding',viewjsonsrc);
   _.merge(context, viewmodel);
+  // console.log('context for ', filename, context);
 
   // Render the template and pass the result directly to the callback
   tmpl(context, callback);
