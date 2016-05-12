@@ -27,6 +27,7 @@
     "dustjs-helpers": "^1.7.3",
     "dustjs-linkedin": "^2.7.2",
     "fs-extra": "~0.14.0",
+    "fs-utils": "^0.7.0",
     "lodash": "~2.4.1"
   },
   "devDependencies": {
