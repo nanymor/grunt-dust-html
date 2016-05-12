@@ -1,28 +1,42 @@
 'use strict';
 
 var path = require('path');
-var fs = require('fs');
+var fs = require('fs-utils');
+var jsonminify = require("jsonminify");
 var _ = require('lodash');
-var async = require('async');
 var grunt = require('grunt');
+var opts,dust,context;
 
-module.exports.render = function(input, opts, callback) {
-  // shift args
-  if(arguments.length === 2) {
-    callback = opts;
-    opts = {};
-  }
-
+module.exports.init = function(options) {
   opts = _.extend({
-    partialsDir: '.',
-    defaultExt: '.dust',
-    whitespace: false,
-    module: 'dustjs-linkedin', // dust, dustjs-helpers, or dustjs-linkedin
-    context: {}
-  }, opts || {});
+      partialsDir: '.',
+      defaultExt: '.dust',
+      whitespace: false,
+      helpers: [],
+      vars: {},
+      onInit: function(){},
+      module: 'dustjs-linkedin', // dust, dustjs-helpers, or dustjs-linkedin
+      context: {},
+      htmlDirName: 'html', //folder that contains the templates
+      dataDirName: 'data', //folder that contains the viewmodel data
+      viewModelObj: false, //name of the top level object used for viewmodels, if needed
+    }, options || {});
 
-  var dust = require(opts.module);
-  var context = opts.context;
+  dust = require(opts.module);
+  context = opts.context;
+
+  //load additional helpers
+  _.each(opts.helpers,function(helper) {
+    require(helper);
+  });
+
+  opts.onInit(dust,opts);
+
+};
+
+
+module.exports.render = function(input, filename, callback) {
+
   var tmpl;
 
   // Configure dust to load partials from the paths defined
@@ -87,6 +101,26 @@ module.exports.render = function(input, opts, callback) {
       _.extend(context, obj);
     });
   }
+
+  //inject vars coming from grunt task
+  _.extend(context, opts.vars);
+
+  var viewjsonsrc = path.dirname(filename).replace(opts.htmlDirName, opts.dataDirName) + '/' + path.basename(filename).replace(opts.defaultExt,'') + '.json';
+  var rawviewcontents = fs.readFileSync(viewjsonsrc,{},true);
+  var stripped = jsonminify(rawviewcontents);
+  // console.log('stripped',stripped);
+  var viewjson = JSON.parse(stripped);
+  var viewmodel = {};
+
+  if (opts.viewModelObj) {
+      viewmodel[opts.viewModelObj] = viewjson || {};
+  } else {
+      viewmodel = viewjson || {};
+  }
+
+  console.log('adding',viewjsonsrc);
+  _.merge(context, viewmodel);
+  // console.log('context for ', filename, context);
 
   // Render the template and pass the result directly to the callback
   tmpl(context, callback);

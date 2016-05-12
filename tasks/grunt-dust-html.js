@@ -17,12 +17,14 @@ module.exports = function(grunt) {
     var opts = this.options();
     var dfds = [];
 
+    dusthtml.init(opts);
+
     this.files.forEach(function(file) {
-      dfds = file.src.map(function(filepath) {
+      file.src.forEach(function(filepath) {
         var input = grunt.file.read(filepath);
 
-        return new Promise(function(resolve, reject) {
-          dusthtml.render(input, opts, function(err, html) {
+        dfds.push(new Promise(function(resolve, reject) {
+          dusthtml.render(input, filepath, function(err, html) {
             if(err) {
               return reject(err);
             }
@@ -31,10 +33,14 @@ module.exports = function(grunt) {
             grunt.log.ok('File "' + file.dest + '" created.');
             resolve();
           });
-        });
+        })
+        );
       });
     });
-
-    Promise.all(dfds).then(done).catch(grunt.fail.fatal);
+    Promise.all(dfds).then(function() {
+      console.log('all templates are done');
+      done();
+    }).catch(grunt.fail.fatal);
   });
+
 };
