@@ -106,22 +106,27 @@ module.exports.render = function(input, filename, callback) {
   _.extend(context, opts.vars);
 
   var viewjsonsrc = path.dirname(filename).replace(opts.htmlDirName, opts.dataDirName) + '/' + path.basename(filename).replace(opts.defaultExt,'') + '.json';
-  var rawviewcontents = fs.readFileSync(viewjsonsrc,{},true);
-  var stripped = jsonminify(rawviewcontents);
-  // console.log('stripped',stripped);
-  var viewjson = JSON.parse(stripped);
-  var viewmodel = {};
+  // see if json file exists
+  var rawviewcontents = fs.isFile(viewjsonsrc) ? fs.readFileSync(viewjsonsrc,{},true) : undefined;
 
-  if (opts.viewModelObj) {
-      viewmodel[opts.viewModelObj] = viewjson || {};
-  } else {
-      viewmodel = viewjson || {};
+  // add json data only when the json file exists
+  if(rawviewcontents) {
+    var stripped = jsonminify(rawviewcontents);
+    // console.log('stripped',stripped);
+    var viewjson = JSON.parse(stripped);
+    var viewmodel = {};
+
+    if (opts.viewModelObj) {
+        viewmodel[opts.viewModelObj] = viewjson || {};
+    } else {
+        viewmodel = viewjson || {};
+    }
+
+    console.log('adding',viewjsonsrc);
+    _.merge(context, viewmodel);
+    // console.log('context for ', filename, context);
   }
-
-  console.log('adding',viewjsonsrc);
-  _.merge(context, viewmodel);
-  // console.log('context for ', filename, context);
-
+  
   // Render the template and pass the result directly to the callback
   tmpl(context, callback);
 };
