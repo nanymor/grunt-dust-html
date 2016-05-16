@@ -106,11 +106,17 @@ module.exports.render = function(input, filename, callback) {
   _.extend(context, opts.vars);
 
   var viewjsonsrc = path.dirname(filename).replace(opts.htmlDirName, opts.dataDirName) + '/' + path.basename(filename).replace(opts.defaultExt,'') + '.json';
-  var rawviewcontents = fs.readFileSync(viewjsonsrc,{},true);
-  var stripped = jsonminify(rawviewcontents);
-  // console.log('stripped',stripped);
-  var viewjson = JSON.parse(stripped);
-  var viewmodel = {};
+  var viewjson;
+  var viewmodel;
+
+  try {
+    var rawviewcontents = fs.readFileSync(viewjsonsrc);
+    var stripped = jsonminify(rawviewcontents);
+    viewjson = JSON.parse(stripped);
+    console.log('Loaded viewdata for %s', viewjsonsrc);
+  } catch(e) {
+    console.log('Loading data from %s failed: %s', viewjsonsrc, e.message);
+  }
 
   if (opts.viewModelObj) {
       viewmodel[opts.viewModelObj] = viewjson || {};
@@ -118,7 +124,6 @@ module.exports.render = function(input, filename, callback) {
       viewmodel = viewjson || {};
   }
 
-  console.log('adding',viewjsonsrc);
   _.merge(context, viewmodel);
   // console.log('context for ', filename, context);
 
